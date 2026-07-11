@@ -1,5 +1,5 @@
 {
-  "name": "@APPNAME/web",
+  "name": "@crystal-orbit/web",
   "private": true,
   "type": "module",
   "scripts": {
