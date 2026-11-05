@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
 
-interface ShellProps {
-  children: ReactNode;
-  sidebar?: ReactNode;
-  dock?: ReactNode;
-}
-
-export function Shell({ children, sidebar, dock }: ShellProps) {
+export function Shell({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="hidden md:flex h-screen">
@@ -21,10 +15,7 @@ export function Shell({ children, sidebar, dock }: ShellProps) {
           <div className="p-6 font-bold text-lg" style={{ fontFamily: "Fraunces, serif" }}>
             Crystal Orbit
           </div>
-          {sidebar ?? (
-            <nav className="flex-1 px-4">
-            </nav>
-          )}
+          <nav className="flex-1 px-4" />
           <div className="p-4 text-xs" style={{ color: "var(--muted)" }}>
             <a
               href="https://freegamestore.online"
@@ -48,7 +39,6 @@ export function Shell({ children, sidebar, dock }: ShellProps) {
           <span className="font-bold" style={{ fontFamily: "Fraunces, serif" }}>
             Crystal Orbit
           </span>
-          {dock && <div className="flex items-center gap-3">{dock}</div>}
         </header>
         <main className="flex-1 overflow-hidden">{children}</main>
       </div>

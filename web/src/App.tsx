@@ -265,13 +265,6 @@ export default function App() {
     engineRef.current?.start();
   }, []);
 
-  const handleRestart = useCallback(() => {
-    setScore(0);
-    setLives(3);
-    setPhase("playing");
-    engineRef.current?.start();
-  }, []);
-
   return (
     <Shell>
       {/* Game container — fills the main area */}
@@ -296,7 +289,7 @@ export default function App() {
             score={finalScore}
             highScore={highScore}
             isNewBest={isNewBest}
-            onRestart={handleRestart}
+            onRestart={handleStart}
           />
         )}
       </div>
