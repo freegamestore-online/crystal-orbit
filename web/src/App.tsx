@@ -78,7 +78,7 @@ function Hud({
 function StartScreen({ onStart }: { onStart: () => void }) {
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center gap-6"
+      className="absolute inset-0 flex flex-col items-center justify-center-safe gap-6 overflow-y-auto py-4"
       style={{ zIndex: 20, background: "rgba(4,6,20,0.82)", backdropFilter: "blur(6px)" }}
     >
       <div className="flex flex-col items-center gap-2">
@@ -147,7 +147,7 @@ function GameOverScreen({
 }) {
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center gap-6"
+      className="absolute inset-0 flex flex-col items-center justify-center-safe gap-6 overflow-y-auto py-4"
       style={{ zIndex: 20, background: "rgba(4,6,20,0.88)", backdropFilter: "blur(6px)" }}
     >
       <div className="flex flex-col items-center gap-2">

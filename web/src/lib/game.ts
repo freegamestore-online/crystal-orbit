@@ -191,6 +191,8 @@ export class GameEngine {
 
     window.addEventListener("keydown", (e) => { this.keys[e.code] = true; }, opts);
     window.addEventListener("keyup", (e) => { this.keys[e.code] = false; }, opts);
+    // keyup never arrives if focus leaves the window mid-press.
+    window.addEventListener("blur", () => { this.keys = {}; }, opts);
 
     // Touch/mouse drag
     canvas.addEventListener("pointerdown", (e) => {
@@ -200,7 +202,9 @@ export class GameEngine {
     }, opts);
     canvas.addEventListener("pointermove", (e) => {
       if (!this.dragActive) return;
-      this.dragDelta.set(e.clientX - this.dragLast.x, e.clientY - this.dragLast.y);
+      // Accumulate: several pointermoves can arrive between two frames.
+      this.dragDelta.x += e.clientX - this.dragLast.x;
+      this.dragDelta.y += e.clientY - this.dragLast.y;
       this.dragLast.set(e.clientX, e.clientY);
     }, opts);
     canvas.addEventListener("pointerup", () => {
@@ -257,7 +261,7 @@ export class GameEngine {
     const dir = Math.random() < 0.5 ? 1 : -1;
 
     const orbitRadius = 2.5 + Math.random() * (ARENA_RADIUS - 3.5);
-    const orbitAngle = Math.random() * Math.PI * 2;
+    const orbitAngle = safeOrbitAngle(orbitRadius, this.playerPos);
     const orbitY = 0.5 + Math.random() * 0.8;
 
     const mesh = BABYLON.MeshBuilder.CreateSphere(
@@ -291,7 +295,7 @@ export class GameEngine {
   private removeCrystal(idx: number) {
     const c = this.crystals[idx];
     if (!c) return;
-    c.mesh.dispose();
+    c.mesh.dispose(false, true); // also dispose its material
     c.light.dispose();
     this.crystals.splice(idx, 1);
   }
@@ -299,7 +303,7 @@ export class GameEngine {
   // ── Remove hazard ────────────────────────────────────────────────────────
   private removeAllHazards() {
     for (const h of this.hazards) {
-      h.mesh.dispose();
+      h.mesh.dispose(false, true);
       h.light.dispose();
     }
     this.hazards = [];
@@ -307,7 +311,7 @@ export class GameEngine {
 
   private removeAllCrystals() {
     for (const c of this.crystals) {
-      c.mesh.dispose();
+      c.mesh.dispose(false, true);
       c.light.dispose();
     }
     this.crystals = [];
@@ -499,6 +503,26 @@ export class GameEngine {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+/** Distance a new hazard must spawn from the player so it can't hit instantly. */
+export const HAZARD_SAFE_SPAWN_DIST = 3;
+
+/**
+ * A random angle on an orbit of `radius` whose point is at least
+ * HAZARD_SAFE_SPAWN_DIST from the player (flat distance). Falls back to the
+ * point opposite the player if random tries keep landing too close.
+ */
+export function safeOrbitAngle(
+  radius: number,
+  player: { x: number; z: number },
+  random: () => number = Math.random,
+): number {
+  for (let i = 0; i < 10; i++) {
+    const a = random() * Math.PI * 2;
+    if (Math.hypot(Math.cos(a) * radius - player.x, Math.sin(a) * radius - player.z) >= HAZARD_SAFE_SPAWN_DIST) return a;
+  }
+  return Math.atan2(-player.z, -player.x);
+}
+
 function hsvToColor3(h: number, s: number, v: number): BABYLON.Color3 {
   const i = Math.floor(h * 6);
   const f = h * 6 - i;
