@@ -137,13 +137,14 @@ function StartScreen({ onStart }: { onStart: () => void }) {
 function GameOverScreen({
   score,
   highScore,
+  isNewBest,
   onRestart,
 }: {
   score: number;
   highScore: number;
+  isNewBest: boolean;
   onRestart: () => void;
 }) {
-  const isNewBest = score > 0 && score >= highScore;
   return (
     <div
       className="absolute inset-0 flex flex-col items-center justify-center gap-6"
@@ -223,6 +224,7 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [finalScore, setFinalScore] = useState(0);
+  const [isNewBest, setIsNewBest] = useState(false);
   const [highScore, updateHighScore] = useHighScore("crystal_orbit_highscore");
 
   // Build the Babylon scene once on mount
@@ -241,7 +243,7 @@ export default function App() {
       onLivesChange: (l) => setLives(l),
       onGameOver: (s) => {
         setFinalScore(s);
-        updateHighScore(s);
+        setIsNewBest(updateHighScore(s));
         setPhase("over");
       },
     });
@@ -293,6 +295,7 @@ export default function App() {
           <GameOverScreen
             score={finalScore}
             highScore={highScore}
+            isNewBest={isNewBest}
             onRestart={handleRestart}
           />
         )}

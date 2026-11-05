@@ -77,6 +77,9 @@ export class GameEngine {
   // camera
   private camera!: BABYLON.ArcRotateCamera;
 
+  // Aborted in dispose() to remove every DOM listener added below.
+  private listeners = new AbortController();
+
   constructor(engine: BABYLON.Engine, scene: BABYLON.Scene, callbacks: GameCallbacks) {
     this.engine = engine;
     this.scene = scene;
@@ -112,6 +115,9 @@ export class GameEngine {
     arenaMat.specularColor = new BABYLON.Color3(0.4, 0.5, 0.8);
     arenaMat.specularPower = 32;
     arenaMat.emissiveColor = new BABYLON.Color3(0.02, 0.04, 0.1);
+    // Default is 4; the floor should catch every glow (ambient + player +
+    // crystals + hazards).
+    arenaMat.maxSimultaneousLights = 2 + MAX_CRYSTALS + MAX_HAZARDS;
 
     this.arenaMesh = BABYLON.MeshBuilder.CreateDisc(
       "arena", { radius: ARENA_RADIUS, tessellation: 64 }, scene
@@ -181,29 +187,30 @@ export class GameEngine {
   private bindInput() {
     const canvas = this.engine.getRenderingCanvas();
     if (!canvas) return;
+    const opts = { signal: this.listeners.signal };
 
-    window.addEventListener("keydown", (e) => { this.keys[e.code] = true; });
-    window.addEventListener("keyup", (e) => { this.keys[e.code] = false; });
+    window.addEventListener("keydown", (e) => { this.keys[e.code] = true; }, opts);
+    window.addEventListener("keyup", (e) => { this.keys[e.code] = false; }, opts);
 
     // Touch/mouse drag
     canvas.addEventListener("pointerdown", (e) => {
       this.dragActive = true;
       this.dragLast.set(e.clientX, e.clientY);
       this.dragDelta.set(0, 0);
-    });
+    }, opts);
     canvas.addEventListener("pointermove", (e) => {
       if (!this.dragActive) return;
       this.dragDelta.set(e.clientX - this.dragLast.x, e.clientY - this.dragLast.y);
       this.dragLast.set(e.clientX, e.clientY);
-    });
+    }, opts);
     canvas.addEventListener("pointerup", () => {
       this.dragActive = false;
       this.dragDelta.set(0, 0);
-    });
+    }, opts);
     canvas.addEventListener("pointercancel", () => {
       this.dragActive = false;
       this.dragDelta.set(0, 0);
-    });
+    }, opts);
   }
 
   // ── Crystal spawning ─────────────────────────────────────────────────────
@@ -343,10 +350,12 @@ export class GameEngine {
     // ── Player movement ──────────────────────────────────────────────────
     const speed = PLAYER_SPEED_BASE;
 
-    // Camera-relative movement
-    const camYaw = this.camera.alpha + Math.PI / 2;
+    // Camera-relative movement. ArcRotateCamera sits at angle `alpha` around
+    // the target, so it looks along alpha + PI (alpha = -PI/2 -> looking +Z).
+    // Babylon is left-handed: screen-right is (sin, -cos) of that heading.
+    const camYaw = this.camera.alpha + Math.PI;
     const fwd = new BABYLON.Vector3(Math.cos(camYaw), 0, Math.sin(camYaw));
-    const right = new BABYLON.Vector3(-Math.sin(camYaw), 0, Math.cos(camYaw));
+    const right = new BABYLON.Vector3(Math.sin(camYaw), 0, -Math.cos(camYaw));
 
     let moveX = 0, moveZ = 0;
 
@@ -478,11 +487,12 @@ export class GameEngine {
     });
 
     this.engine.runRenderLoop(() => scene.render());
-    window.addEventListener("resize", () => this.engine.resize());
+    window.addEventListener("resize", () => this.engine.resize(), { signal: this.listeners.signal });
   }
 
   dispose() {
     this.running = false;
+    this.listeners.abort();
     this.removeAllCrystals();
     this.removeAllHazards();
   }
