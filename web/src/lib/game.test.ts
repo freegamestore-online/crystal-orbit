@@ -1,14 +1,15 @@
-import * as BABYLON from "@babylonjs/core";
+import { NullEngine } from "@babylonjs/core/Engines/nullEngine";
+import { Scene } from "@babylonjs/core/scene";
 import { afterEach, describe, expect, it } from "vitest";
 import { GameEngine, HAZARD_SAFE_SPAWN_DIST, safeOrbitAngle } from "./game";
 
 // Drives the engine headlessly: NullEngine has no canvas, so hand it a jsdom
 // one to get the input listeners bound.
 function setup() {
-  const engine = new BABYLON.NullEngine();
+  const engine = new NullEngine();
   const canvas = document.createElement("canvas");
   engine.getRenderingCanvas = () => canvas;
-  const scene = new BABYLON.Scene(engine);
+  const scene = new Scene(engine);
   const game = new GameEngine(engine, scene, { onScoreChange() {}, onLivesChange() {}, onGameOver() {} });
   const update = (dt: number) => (game as unknown as { update(dt: number): void }).update(dt);
   const player = () => scene.getMeshByName("player")!.position;

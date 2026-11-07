@@ -1,8 +1,9 @@
+import { Engine } from "@babylonjs/core/Engines/engine";
+import { Scene } from "@babylonjs/core/scene";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Shell } from "./components/Shell";
 import { GameEngine } from "./lib/game";
 import { useHighScore } from "./hooks/useHighScore";
-import * as BABYLON from "@babylonjs/core";
 import type { GamePhase } from "./types";
 
 // ── Heart SVG ────────────────────────────────────────────────────────────────
@@ -232,11 +233,11 @@ export default function App() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const babylonEngine = new BABYLON.Engine(canvas, true, {
+    const babylonEngine = new Engine(canvas, true, {
       preserveDrawingBuffer: true,
       stencil: true,
     });
-    const scene = new BABYLON.Scene(babylonEngine);
+    const scene = new Scene(babylonEngine);
 
     const gameEngine = new GameEngine(babylonEngine, scene, {
       onScoreChange: (s) => setScore(s),

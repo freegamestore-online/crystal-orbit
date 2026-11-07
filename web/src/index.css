@@ -1,6 +1,25 @@
 @import "tailwindcss";
+@import "@freegamestore/games/theme.css";
+
+/* Tailwind scans the games SDK build for its class names (@freegamestore/games). */
+@source "../node_modules/@freegamestore/games/dist";
+
+/* Token utilities: bg-panel, text-ink, text-muted, border-line, text-accent, text-danger, … */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger, var(--error));
+  --font-display: "Fraunces", serif;
+}
 
 :root {
+  --bg: #ffffff;
   --paper: #ffffff;
   --ink: #1a1a1a;
   --muted: #6b7280;
@@ -16,6 +35,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --bg: #0f0f0f;
     --paper: #0f0f0f;
     --ink: #f5f5f5;
     --muted: #9ca3af;

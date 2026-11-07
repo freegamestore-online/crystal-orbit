@@ -1,9 +1,10 @@
+import { GameShell } from "@freegamestore/games";
 import type { ReactNode } from "react";
 
 export function Shell({ children }: { children: ReactNode }) {
   return (
-    <>
-      <div className="hidden md:flex h-screen">
+    <GameShell>
+      <div className="hidden md:flex h-full">
         <aside
           className="flex flex-col border-r h-full shrink-0"
           style={{
@@ -31,7 +32,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-hidden">{children}</main>
       </div>
 
-      <div className="flex flex-col h-screen md:hidden">
+      <div className="flex flex-col h-full md:hidden">
         <header
           className="flex items-center justify-between px-4 h-14 border-b shrink-0"
           style={{ borderColor: "var(--line)", background: "var(--panel)" }}
@@ -42,6 +43,6 @@ export function Shell({ children }: { children: ReactNode }) {
         </header>
         <main className="flex-1 overflow-hidden">{children}</main>
       </div>
-    </>
+    </GameShell>
   );
 }
